@@ -104,6 +104,22 @@ void ProjectItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         painter->restore();
     }
 
+    {  // Popularity (downloads / follows) painting, aligned to the right of the title
+        auto stats = index.data(UserDataTypes::STATS).toString();
+        if (!stats.isEmpty()) {
+            painter->save();
+            painter->setFont(opt.font);
+
+            auto color = isSelected ? opt.palette.highlightedText().color() : opt.palette.text().color();
+            color.setAlpha(160);
+            painter->setPen(color);
+
+            auto stats_width = QFontMetrics(opt.font).horizontalAdvance(stats);
+            painter->drawText(rect.right() - stats_width - 4, rect.y() + title_height, stats);
+            painter->restore();
+        }
+    }
+
     {  // Description painting
         auto description = index.data(UserDataTypes::DESCRIPTION).toString().simplified();
 

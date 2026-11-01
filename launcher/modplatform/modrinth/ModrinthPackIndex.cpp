@@ -54,6 +54,9 @@ void Modrinth::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
     pack.logoUrl = obj["icon_url"].toString("");
     pack.logoName = QString("%1.%2").arg(obj["slug"].toString(), QFileInfo(QUrl(pack.logoUrl).fileName()).suffix());
 
+    pack.downloads = static_cast<qint64>(obj["downloads"].toDouble());
+    pack.follows = static_cast<qint64>(obj.contains("follows") ? obj["follows"].toDouble() : obj["followers"].toDouble());
+
     if (obj.contains("author")) {
         ModPlatform::ModpackAuthor modAuthor;
         modAuthor.name = obj["author"].toString();

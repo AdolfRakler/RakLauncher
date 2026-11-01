@@ -84,6 +84,16 @@ auto ResourceModel::data(const QModelIndex& index, int role) const -> QVariant
             return pack->name;
         case UserDataTypes::DESCRIPTION:
             return pack->description;
+        case UserDataTypes::STATS: {
+            QStringList parts;
+            if (pack->downloads > 0) {
+                parts << QStringLiteral("\u2B07 %1").arg(ModPlatform::compactNumber(pack->downloads));
+            }
+            if (pack->follows > 0) {
+                parts << QStringLiteral("\u2665 %1").arg(ModPlatform::compactNumber(pack->follows));
+            }
+            return parts.join(QStringLiteral("  "));
+        }
         case Qt::CheckStateRole:
             return pack->isAnyVersionSelected() ? Qt::Checked : Qt::Unchecked;
         case UserDataTypes::INSTALLED:
@@ -106,6 +116,7 @@ QHash<int, QByteArray> ResourceModel::roleNames() const
     roles[UserDataTypes::TITLE] = "title";
     roles[UserDataTypes::DESCRIPTION] = "description";
     roles[UserDataTypes::INSTALLED] = "installed";
+    roles[UserDataTypes::STATS] = "stats";
 
     return roles;
 }

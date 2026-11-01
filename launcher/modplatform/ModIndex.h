@@ -161,6 +161,17 @@ struct ExtraPackData {
     QString body;
 };
 
+inline QString compactNumber(qint64 value)
+{
+    if (value >= 1000000) {
+        return QString::number(value / 1000000.0, 'f', 1) + QStringLiteral("M");
+    }
+    if (value >= 1000) {
+        return QString::number(value / 1000.0, 'f', 1) + QStringLiteral("K");
+    }
+    return QString::number(value);
+}
+
 struct IndexedPack {
     using Ptr = std::shared_ptr<IndexedPack>;
 
@@ -174,6 +185,10 @@ struct IndexedPack {
     QString logoUrl;
     QString websiteUrl;
     Side side = Side::NoSide;
+
+    // Popularity information (available from Modrinth)
+    qint64 downloads = 0;
+    qint64 follows = 0;
 
     bool versionsLoaded = false;
     QList<IndexedVersion> versions;

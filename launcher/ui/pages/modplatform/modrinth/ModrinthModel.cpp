@@ -109,6 +109,16 @@ auto ModpackListModel::data(const QModelIndex& index, int role) const -> QVarian
             return pack->name;
         case UserDataTypes::DESCRIPTION:
             return pack->description;
+        case UserDataTypes::STATS: {
+            QStringList parts;
+            if (pack->downloads > 0) {
+                parts << QStringLiteral("\u2B07 %1").arg(ModPlatform::compactNumber(pack->downloads));
+            }
+            if (pack->follows > 0) {
+                parts << QStringLiteral("\u2665 %1").arg(ModPlatform::compactNumber(pack->follows));
+            }
+            return parts.join(QStringLiteral("  "));
+        }
         case UserDataTypes::INSTALLED:
             return false;
         default:

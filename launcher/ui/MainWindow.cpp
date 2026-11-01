@@ -108,6 +108,7 @@
 #include "ui/dialogs/NewInstanceDialog.h"
 #include "ui/dialogs/NewsDialog.h"
 #include "ui/dialogs/ProgressDialog.h"
+#include "ui/dialogs/WurstInstallDialog.h"
 #include "ui/dialogs/skins/SkinManageDialog.h"
 #include "ui/instanceview/InstanceDelegate.h"
 #include "ui/instanceview/InstanceProxyModel.h"
@@ -119,6 +120,7 @@
 #include "minecraft/PackProfile.h"
 #include "minecraft/VersionFile.h"
 #include "minecraft/WorldList.h"
+#include "minecraft/WurstInstallTask.h"
 #include "minecraft/mod/ModFolderModel.h"
 #include "minecraft/mod/ResourcePackFolderModel.h"
 #include "minecraft/mod/ShaderPackFolderModel.h"
@@ -152,6 +154,15 @@ QString profileInUseFilter(const QString& profile, bool used)
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // RakLauncher: one-click Wurst client installation
+    {
+        auto* actionInstallWurst = new QAction(tr("Install Wurst client..."), this);
+        actionInstallWurst->setIcon(QIcon::fromTheme("new"));
+        connect(actionInstallWurst, &QAction::triggered, this, &MainWindow::on_actionInstallWurst_triggered);
+        ui->fileMenu->insertAction(ui->actionAddInstance, actionInstallWurst);
+        ui->fileMenu->insertSeparator(ui->actionAddInstance);
+    }
 
     setWindowIcon(APPLICATION->logo());
     setWindowTitle(APPLICATION->applicationDisplayName());
@@ -975,6 +986,17 @@ void MainWindow::addInstance(const QString& url, const QMap<QString, QString>& e
 void MainWindow::on_actionAddInstance_triggered()
 {
     addInstance();
+}
+
+void MainWindow::on_actionInstallWurst_triggered()
+{
+    WurstInstallDialog dialog(this);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    unique_qobject_ptr<Task> task(new WurstInstallTask(dialog.selectedMinecraftVersion(), dialog.instanceName()));
+    runModalTask(task.data());
 }
 
 void MainWindow::processURLs(QList<QUrl> urls)

@@ -6,7 +6,8 @@
 enum UserDataTypes {
     TITLE = 257,        // QString
     DESCRIPTION = 258,  // QString
-    INSTALLED = 259     // bool
+    INSTALLED = 259,    // bool
+    STATS = 260         // QString
 };
 
 /** This is an item delegate composed of:

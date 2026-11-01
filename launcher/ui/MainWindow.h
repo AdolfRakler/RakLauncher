@@ -96,6 +96,8 @@ class MainWindow : public QMainWindow {
 
     void on_actionAddInstance_triggered();
 
+    void on_actionInstallWurst_triggered();
+
     void on_actionREDDIT_triggered();
 
     void on_actionMATRIX_triggered();

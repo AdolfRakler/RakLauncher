@@ -1,5 +1,5 @@
 name: Package for Windows
-description: Create a Windows package for PineconeMC
+description: Create a Windows package for RakLauncher
 
 inputs:
   version:
@@ -149,7 +149,7 @@ runs:
         certificate-profile-name: PineconeMC
 
         files: |
-          ${{ github.workspace }}\ElyPrismLauncher-Setup.exe
+          ${{ github.workspace }}\RakLauncher-Setup.exe
 
         # recommended in https://github.com/Azure/artifact-signing-action#timestamping-1
         timestamp-rfc3161: 'http://timestamp.acs.microsoft.com'
@@ -170,17 +170,17 @@ runs:
     - name: Upload binary zip
       uses: actions/upload-artifact@v7
       with:
-        name: PineconeMC-${{ inputs.artifact-name }}-${{ inputs.version }}-${{ inputs.build-type }}
+        name: RakLauncher-${{ inputs.artifact-name }}-${{ inputs.version }}-${{ inputs.build-type }}
         path: install/**
 
     - name: Upload portable zip
       uses: actions/upload-artifact@v7
       with:
-        name: PineconeMC-${{ inputs.artifact-name }}-Portable-${{ inputs.version }}-${{ inputs.build-type }}
+        name: RakLauncher-${{ inputs.artifact-name }}-Portable-${{ inputs.version }}-${{ inputs.build-type }}
         path: install-portable/**
 
     - name: Upload installer
       uses: actions/upload-artifact@v7
       with:
-        name: PineconeMC-${{ inputs.artifact-name }}-Setup-${{ inputs.version }}-${{ inputs.build-type }}
-        path: PineconeMC-Setup.exe
+        name: RakLauncher-${{ inputs.artifact-name }}-Setup-${{ inputs.version }}-${{ inputs.build-type }}
+        path: RakLauncher-Setup.exe
