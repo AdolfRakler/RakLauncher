@@ -64,7 +64,24 @@ void WurstInstallTask::resolveLoader()
     m_currentTask.reset();
 
     auto list = APPLICATION->metadataIndex()->get(m_loaderUid);
-    m_loaderVersion = list->getLatestForParent("net.minecraft", m_mcVersion);
+
+    if (Wurst::usesFabric(m_mcVersion)) {
+        // Fabric Loader is not tied to a specific Minecraft version (it depends on intermediary instead),
+        // so the version list has no parent requirements. Use the recommended build, like the new
+        // instance dialog does.
+        for (const auto& version : list->versions()) {
+            if (version->isRecommended()) {
+                m_loaderVersion = version;
+                break;
+            }
+        }
+        if (!m_loaderVersion && list->count() > 0) {
+            m_loaderVersion = list->concreteAt(0);
+        }
+    } else {
+        m_loaderVersion = list->getLatestForParent("net.minecraft", m_mcVersion);
+    }
+
     if (!m_loaderVersion) {
         emitFailed(tr("Could not find a compatible %1 version for Minecraft %2. "
                       "Make sure the launcher has an Internet connection and try again.")
