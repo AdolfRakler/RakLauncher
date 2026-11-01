@@ -57,6 +57,10 @@ jobs:
 
     environment: ${{ inputs.environment || '' }}
 
+    # Windows arm64 runners currently lack the Visual Studio installation the setup action expects,
+    # so keep those builds optional instead of failing the whole workflow.
+    continue-on-error: ${{ matrix.continue-on-error == true }}
+
     permissions:
       contents: read
       # Required for Azure Trusted Signing
@@ -89,6 +93,7 @@ jobs:
             cmake-preset: windows_mingw
             msystem: CLANGARM64
             vcvars-arch: arm64
+            continue-on-error: true
 
           - os: windows-2022
             artifact-name: Windows-MSVC
@@ -102,6 +107,7 @@ jobs:
             cmake-preset: windows_msvc
             vcvars-arch: arm64
             qt-version: 6.10.2
+            continue-on-error: true
 
           - os: macos-26
             artifact-name: macOS
