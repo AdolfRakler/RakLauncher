@@ -41,6 +41,7 @@
 #include "Application.h"
 #include "BuildConfig.h"
 #include "FileSystem.h"
+#include "QObjectPtr.h"
 
 #include "MainWindow.h"
 #include "ui_MainWindow.h"
@@ -83,7 +84,9 @@
 #include <java/JavaInstallList.h>
 #include <java/JavaUtils.h>
 #include <launch/LaunchTask.h>
+#include <launch/TaskStepWrapper.h>
 #include <minecraft/MinecraftInstance.h>
+#include <minecraft/MinecraftLoadAndCheck.h>
 #include <minecraft/auth/AccountList.h>
 #include <net/ApiDownload.h>
 #include <net/NetJob.h>
@@ -548,6 +551,10 @@ void MainWindow::showInstanceContextMenu(const QPoint& pos)
         actions.prepend(ui->actionChangeInstIcon);
         actions.prepend(ui->actionRenameInstance);
 
+        QAction* actionPrepareOffline = new QAction(tr("Prepare for offline use"), this);
+        connect(actionPrepareOffline, &QAction::triggered, this, &MainWindow::prepareInstanceForOffline);
+        actions.append(actionPrepareOffline);
+
         // add header
         actions.prepend(actionSep);
         QAction* actionVoid = new QAction(m_selectedInstance->name(), this);
@@ -589,6 +596,41 @@ void MainWindow::showInstanceContextMenu(const QPoint& pos)
         myMenu.setEnabled(m_selectedInstance->canLaunch());
     */
     myMenu.exec(view->mapToGlobal(pos));
+}
+
+void MainWindow::prepareInstanceForOffline()
+{
+    auto* inst = dynamic_cast<MinecraftInstance*>(m_selectedInstance);
+    if (!inst) {
+        QMessageBox::warning(this, tr("Prepare for offline use"), tr("This instance cannot be prepared for offline use."));
+        return;
+    }
+
+    // 1. Load (and cache) all component metadata in online mode.
+    {
+        MinecraftLoadAndCheck loadTask(inst, Net::Mode::Online);
+        ProgressDialog loadDialog(this);
+        loadDialog.setSkipButton(true, tr("Abort"));
+        if (loadDialog.execWithTask(&loadTask) != QDialog::Accepted) {
+            return;
+        }
+    }
+
+    // 2. Download every library and asset the instance needs.
+    auto updateTask = LaunchTask::create(inst);
+    auto* parent = updateTask.get();
+    for (const auto& task : inst->createUpdateTask()) {
+        updateTask->appendStep(makeShared<TaskStepWrapper>(parent, task));
+    }
+
+    ProgressDialog updateDialog(this);
+    updateDialog.setSkipButton(true, tr("Abort"));
+    const int result = updateDialog.execWithTask(updateTask.get());
+    inst->setRunning(false);
+    if (result == QDialog::Accepted) {
+        QMessageBox::information(this, tr("Prepare for offline use"),
+                                 tr("Done! This instance can now be launched without an Internet connection."));
+    }
 }
 
 void MainWindow::updateMainToolBar()

@@ -124,6 +124,8 @@ class MainWindow : public QMainWindow {
 
     void on_actionViewSelectedInstFolder_triggered();
 
+    void prepareInstanceForOffline();
+
     void refreshInstances();
 
     void checkForUpdates();

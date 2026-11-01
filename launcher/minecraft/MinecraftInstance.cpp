@@ -47,6 +47,8 @@
 #include "MMCTime.h"
 #include "java/JavaVersion.h"
 
+#include <QFile>
+
 #include "launch/LaunchTask.h"
 #include "launch/TaskStepWrapper.h"
 #include "launch/steps/CheckJava.h"
@@ -1154,6 +1156,30 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
         process->appendStep(makeShared<CreateGameFolders>(pptr));
     }
 
+    // Apply default game options to freshly created instances (Russian language, 16 chunks, max graphics).
+    // Existing options.txt is never overwritten, so the player's own settings are preserved.
+    if (APPLICATION->settings()->get("ApplyDefaultGameOptions").toBool()) {
+        const QString optionsPath = FS::PathCombine(gameRoot(), "options.txt");
+        if (!QFile::exists(optionsPath) && FS::ensureFolderPathExists(gameRoot())) {
+            QFile optionsFile(optionsPath);
+            if (optionsFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                optionsFile.write("lang:ru_ru\n"
+                                  "renderDistance:16\n"
+                                  "simulationDistance:16\n"
+                                  "graphicsMode:1\n"
+                                  "fancyGraphics:true\n"
+                                  "ao:2\n"
+                                  "particles:0\n"
+                                  "entityShadows:true\n"
+                                  "mipmapLevels:4\n"
+                                  "biomeBlendRadius:7\n"
+                                  "maxFps:260\n"
+                                  "enableVsync:false\n"
+                                  "guiScale:0\n");
+            }
+        }
+    }
+
     if (!targetToJoin && settings()->get("JoinServerOnLaunch").toBool()) {
         QString fullAddress = settings()->get("JoinServerOnLaunchAddress").toString();
         if (!fullAddress.isEmpty()) {
@@ -1195,8 +1221,8 @@ LaunchTask* MinecraftInstance::createLaunchTask(AuthSessionPtr session, Minecraf
         process->appendStep(step);
     }
 
-    // prepare Ely patch
-    if (session->wantsElyPatch) {
+    // prepare Ely patch (not needed for offline launches - it would require network access to resolve the patch metadata)
+    if (session->wantsElyPatch && session->launchMode != LaunchMode::Offline) {
         process->appendStep(makeShared<TaskStepWrapper>(pptr, makeShared<ElyPatchTask>(this, runtimeContext(), mode)));
     }
 

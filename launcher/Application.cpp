@@ -765,6 +765,9 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         // Legacy settings
         m_settings->registerSetting("OnlineFixes", true);
 
+        // RakLauncher: apply sane in-game defaults (ru_ru, 16 chunks, fancy graphics) to new instances
+        m_settings->registerSetting("ApplyDefaultGameOptions", true);
+
         // Ely settings
         m_settings->registerSetting("ElyPatchPreference", 1);
 
@@ -1247,7 +1250,8 @@ bool Application::createSetupWizard()
     bool pasteInterventionRequired = settings()->get("PastebinURL") != "";
     bool validWidgets = m_themeManager->isValidApplicationTheme(settings()->get("ApplicationTheme").toString());
     bool validIcons = m_themeManager->isValidIconTheme(settings()->get("IconTheme").toString());
-    bool login = !m_accounts->anyAccountIsValid() && capabilities() & Application::SupportsMSA;
+    // Offline-first fork: do not force the user to sign in to an online account on first run.
+    bool login = false;
     bool themeInterventionRequired = !validWidgets || !validIcons;
     bool wizardRequired = javaRequired || languageRequired || pasteInterventionRequired || themeInterventionRequired || askjava || login;
     if (wizardRequired) {

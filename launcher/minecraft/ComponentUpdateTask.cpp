@@ -783,6 +783,7 @@ void ComponentUpdateTask::remoteLoadFailed(size_t taskIndex, const QString& msg)
     d->remoteLoadSuccessful = false;
     taskSlot.succeeded = false;
     taskSlot.finished = true;
+    taskSlot.error = msg;
     d->remoteTasksInProgress--;
     checkIfAllFinished();
 }
@@ -805,13 +806,14 @@ void ComponentUpdateTask::checkIfAllFinished()
         for (auto& item : d->remoteLoadStatusList) {
             if (!item.succeeded) {
                 const ComponentPtr component = d->m_profile->getComponent(item.PackProfileIndex);
-                allErrorsList.append(tr("Could not download metadata for %1 %2. Please change the version or try again later.")
-                                         .arg(component->getName(), component->m_version));
+                allErrorsList.append(tr("Could not load metadata for %1 %2: %3")
+                                         .arg(component->getName(), component->m_version,
+                                              item.error.isEmpty() ? tr("unknown error") : item.error));
             }
         }
         d->remoteLoadStatusList.clear();
 
         auto allErrors = allErrorsList.join("\n");
-        emitFailed(tr("Component metadata update task failed while downloading from remote server:\n%1").arg(allErrors));
+        emitFailed(tr("Component metadata update task failed:\n%1").arg(allErrors));
     }
 }

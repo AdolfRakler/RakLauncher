@@ -157,6 +157,13 @@ void BaseEntityLoadTask::executeTask()
         emitSucceeded();
         return;
     }
+    // Never try to reach the network in offline mode: give a clear, actionable error instead.
+    if (m_mode == Net::Mode::Offline) {
+        emitFailed(tr("Metadata for %1 is not cached locally. Launch this instance once with an Internet connection to prepare it "
+                      "for offline use.")
+                       .arg(m_entity->localFilename()));
+        return;
+    }
     m_task.reset(new NetJob(QObject::tr("Download of meta file %1").arg(m_entity->localFilename()), APPLICATION->network()));
     auto url = m_entity->url();
     auto entry = APPLICATION->metacache()->resolveEntry("meta", m_entity->localFilename());
