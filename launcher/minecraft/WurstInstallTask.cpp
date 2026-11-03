@@ -55,7 +55,7 @@ QString curseForgeFileUrl(const QJsonObject& file)
 
     // CurseForge hides the download URL of some files until the project owner opts in,
     // but the CDN path is predictable and still works.
-    const auto id = file["id"].toVariant().toLongLong();
+    const auto id = static_cast<qint64>(file["id"].toDouble());
     const auto fileName = file["fileName"].toString();
     if (id <= 0 || fileName.isEmpty()) {
         return {};
@@ -424,7 +424,7 @@ void WurstInstallTask::commitPerformanceMods()
 
     if (!m_optiFabricFile.isEmpty()) {
         m_files.append({ m_optiFabricUrl, FS::PathCombine(m_modsDir, m_optiFabricFile) });
-        m_extraMods << m_optiFabricName.trimmed();
+        m_extraMods << (m_optiFabricName.isEmpty() ? m_optiFabricFile : m_optiFabricName.trimmed());
     }
 
     m_files.append({ m_optiFineUrl, FS::PathCombine(m_modsDir, m_optiFineFile) });
@@ -506,6 +506,8 @@ void WurstInstallTask::fetchText(const QUrl& url, const QString& jobName, std::f
 
     auto job = makeShared<NetJob>(jobName, APPLICATION->network());
     job->addNetAction(action);
+    // These lookups are optional: a missing mod must not interrupt the installation with a retry prompt.
+    job->setAskRetry(false);
 
     connect(job.get(), &Task::succeeded, this, [this, response, onSuccess = std::move(onSuccess)] {
         const QByteArray data = *response;
