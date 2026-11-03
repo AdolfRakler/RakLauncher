@@ -36,7 +36,9 @@ WurstInstallDialog::WurstInstallDialog(QWidget* parent) : QDialog(parent)
     auto* description = new QLabel(
         tr("A separate instance will be created with the required mod loader "
            "(Fabric for Minecraft 1.14 and newer, Forge for 1.8 - 1.12.2). "
-           "The latest Wurst client and, when needed, Fabric API will be downloaded into it."),
+           "The latest Wurst client and, when needed, Fabric API will be downloaded into it. "
+           "A performance mod is installed as well: Sodium (or a Sodium fork) on Fabric, "
+           "or OptiFine when Sodium is not available for the selected Minecraft version."),
         this);
     description->setWordWrap(true);
     layout->addWidget(description);
